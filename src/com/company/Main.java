@@ -17,7 +17,8 @@ public class Main {
         String fileAsString = readFromFile(FILE_NAME);
         int[] table = createTable(fileAsString);
         TreeMap map = createCode(table);
-        System.out.println(map);
+        saveToFile(map);
+
 
 
     }
@@ -72,6 +73,35 @@ private static void getCodes(TreeMap<String, String> map, String code, Node top)
 
     }
 }
+
+    //saves map to a textFile
+    public static void saveToFile(TreeMap<String, String> map) throws FileNotFoundException {
+        StringBuilder sb = new StringBuilder();
+        //iterate trough map and save it as string
+        for (Map.Entry<String, String> entry : map.entrySet()){
+            sb.append(entry.getValue());
+            sb.append(":");
+            sb.append(entry.getKey());
+            sb.append("-");
+        }
+        String huffmanAsString = sb.toString();
+
+        //delete last delimeter
+        if (huffmanAsString.charAt(huffmanAsString.length() -1) == '-') {
+            huffmanAsString = huffmanAsString.substring(0, huffmanAsString.length()-1);
+            System.out.println(huffmanAsString);
+
+        }
+        //saves String as dec_tab.txt
+        try (PrintWriter out = new PrintWriter("dec_tab.txt")){
+            out.print(huffmanAsString);
+            System.out.println("table saved as dec_tab.txt");
+        }
+
+    }
+
+
+
 
 
 
