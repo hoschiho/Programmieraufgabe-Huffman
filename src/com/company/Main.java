@@ -1,10 +1,10 @@
 package com.company;
 
+import com.sun.source.tree.Tree;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -15,49 +15,65 @@ public class Main {
 
         //get the textfile as string
         String fileAsString = readFromFile(FILE_NAME);
-
-        //create a map with the key as the ascii code and value as count.
-        Map map = addCountToMap(fileAsString);
-
-
+        int[] table = createTable(fileAsString);
+        TreeMap map = createCode(table);
+        System.out.println(map);
 
 
-
-        //print out map
-        for (Object i : map.keySet()) {
-            System.out.println("key: " + i + " value: " + map.get(i));
-        }
     }
 
-
-
-    public static Map addCountToMap(String fileAsString){
-
-        //fill a map with all chars and the value 0
-        Map<Integer, Integer> map = new HashMap<>();
-        for (int i = 0; i < 127; i++) {
-            map.put(i,0);
-        }
-
-        //itterates trough the string to count each letter.
-        for (int i = 0; i < fileAsString.length(); i++) {
-            int counter = 0;
-            char c = fileAsString.charAt(i);
-
-            for (int j = 0; j < fileAsString.length(); j++) {
-                if(fileAsString.charAt(j) == c){
-                    counter++;
-                }
+    //Aufgabe 2 //
+    private static int[] createTable(String fileAsString){
+        int[] table = new int[256]; //position of element in array is char identifier.
+        for (char c : fileAsString.toCharArray()) {
+            if (c < 256) { //make sure to only get ascii characters
+                table[c]++;
             }
-            //convert char to ASCII
-            int charInASCII = (int) c;
-
-            //add ascii char & count to the map.
-            map.put(charInASCII,counter);
         }
-
-        return map;
+        return table;
     }
+
+        //Create Huffman tree (Aufgabe 3.)//
+private static TreeMap<String, String> createCode(int[] table) {
+
+    PriorityQueue<Node> queue = new PriorityQueue<>((o1, o2) -> (o1.frequency < o2.frequency) ? -1 : 1); //sorted frequency table
+    TreeMap<String, String> map = new TreeMap<>(); //table as treemap
+    for (int i = 0; i < table.length; i++) {
+        if ((table[i] > 0) && queue.add(new Node(String.valueOf(i), table[i]))) ; //saves char and frequency
+
+    }
+    Node left = null;
+    Node right = null;
+    Node top = null;
+
+    //huffman coding
+    while (queue.size() != 1) { //repeats until only one element is left in the queue
+
+        //takes the two lowest nodes
+        left = queue.poll();
+        right = queue.poll();
+        top = new Node(left, right); //generates a parent node with left and right
+        queue.add(top); //adds parent node
+    }
+
+    getCodes(map, "", top); //use recursion to generate the huffman code
+
+    return map;
+
+    }
+
+//fills the huffman tree
+private static void getCodes(TreeMap<String, String> map, String code, Node top){
+    if(top.left == null && top.right == null){ //takes only chars and not a parent node
+        map.put(code,top.value); //puts the code and the value in the map
+    } else{
+        getCodes(map, code + "0", top.left); //if we go left, we add a 0 to the code
+        getCodes(map, code + "1", top.right); //if we go right, we add a 1 to the code
+
+    }
+}
+
+
 
     //reads a textFile into a String (Aufgabe 1.)
     public static String readFromFile(String FILE_NAME) throws IOException {
